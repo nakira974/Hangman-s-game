@@ -37,10 +37,10 @@ namespace JeuxDuPendu
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Server srv = new Server(PlayerName);
-            Task startTask = srv.Start();
+            Server server = new Server(PlayerName);
+            Task startTask = server.Start();
             this.Hide();
-            Multiplayer multiplayer = new Multiplayer(srv);
+            Multiplayer multiplayer = new Multiplayer(server);
             multiplayer.Closed += (s, args) => this.Close();
             multiplayer.Show();
         }
@@ -123,6 +123,7 @@ namespace JeuxDuPendu
             }
 
             await Task.Run(client.ListenAsync);
+            await Task.Run(client.RecieveJsonAsync);
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
