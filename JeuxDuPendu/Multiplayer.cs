@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Extensions.DependencyInjection;
 using Tcp_Lib;
 
 namespace JeuxDuPendu
@@ -18,6 +12,7 @@ namespace JeuxDuPendu
         private int _messageCount { get; set; }
         private int _messageBoxIndex { get; set; }
 
+        private GameData _gameData { get; set; }
         private Client Client { get; init; }
         private Server Server { get; init; }
 
@@ -49,8 +44,19 @@ namespace JeuxDuPendu
             _messageBoxIndex = 0;
 
             aTimer.Tick += aTimer_Tick;
-            aTimer.Interval = 2000; //milisecunde
+            aTimer.Interval = 2000;
             aTimer.Enabled = true;
+
+            _gameData = new GameData()
+            {
+                PlayersList = new List<string>() { Server.SenderName },
+                CurrentPlayer = Server.SenderName,
+                CurrentTurn = 0,
+                CurrentPlayerSignal = Signals.WAIT,
+                CurrentLetterSet = char.MinValue,
+                CurrentWordDiscovered = string.Empty
+            };
+            Server.GameDatas.Add(_gameData);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -145,6 +151,28 @@ namespace JeuxDuPendu
 
         private void label2_Click(object sender, EventArgs e)
         {
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            _gameData.CurrentLetterSet = textBox1.Text.FirstOrDefault();
+
+            if (Client != null)
+            {
+                if (_gameData.CurrentPlayer == Client.SenderName)
+                {
+                    _gameData.CurrentTurn++;
+                    Client.SendJsonAsync(_gameData);
+                }
+            }
+            else if (Server != null)
+            {
+                if (_gameData.CurrentPlayer == Server.SenderName)
+                {
+                    _gameData.CurrentTurn++;
+                    Server.SendJsonAsync(_gameData);
+                }
+            }
         }
     }
 }
