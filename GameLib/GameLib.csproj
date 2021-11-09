@@ -24,4 +24,11 @@
         <ProjectReference Include="..\..\..\Csharp_Tcp_Lib\Tcp_Lib\Tcp_Lib.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Remove="rsc\Dictionary.db"/>
+        <EmbeddedResource Include="rsc\Dictionary.db">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
+
 </Project>

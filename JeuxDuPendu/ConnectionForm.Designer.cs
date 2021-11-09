@@ -35,6 +35,7 @@ namespace JeuxDuPendu
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.serverDataGrid = new System.Windows.Forms.DataGridView();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.serverDataGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -103,11 +104,22 @@ namespace JeuxDuPendu
             this.serverDataGrid.TabIndex = 9;
             this.serverDataGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.serverDataGrid_CellContentClick);
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(305, 47);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.PlaceholderText = "Nom du joueur";
+            this.textBox1.Size = new System.Drawing.Size(168, 27);
+            this.textBox1.TabIndex = 10;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
             // ConnectionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(941, 621);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.serverDataGrid);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
@@ -131,5 +143,6 @@ namespace JeuxDuPendu
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.DataGridView serverDataGrid;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }

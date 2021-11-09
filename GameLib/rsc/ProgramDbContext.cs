@@ -10,7 +10,7 @@ namespace GameLib.rsc
     public class ProgramDbContext : DbContext
     {
         private readonly string ConnectionString =
-            @"Data Source=D:\RiderProjects\BackUp\JeuxDuPendu\GameLib\rsc\Dictionary.db";
+            @"Data Source=D:rsc\Dictionary.db";
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

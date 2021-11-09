@@ -16,6 +16,8 @@ namespace JeuxDuPendu
 {
     public partial class ConnectionForm : Form
     {
+        private string PlayerName { get; set; }
+
         public ConnectionForm()
         {
             InitializeComponent();
@@ -35,7 +37,7 @@ namespace JeuxDuPendu
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Server srv = new Server();
+            Server srv = new Server(PlayerName);
             Task startTask = srv.Start();
             this.Hide();
             Multiplayer multiplayer = new Multiplayer(srv);
@@ -110,7 +112,7 @@ namespace JeuxDuPendu
 
         private async void connectionButton_Click(object sender, EventArgs e)
         {
-            Client client = new Client();
+            Client client = new Client(PlayerName);
             await client.ConnectAsync(connectionTextBox.Text);
             if (client.ClientStream.Count > 0)
             {
@@ -121,6 +123,11 @@ namespace JeuxDuPendu
             }
 
             await Task.Run(client.ListenAsync);
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            PlayerName = textBox1.Text;
         }
     }
 
