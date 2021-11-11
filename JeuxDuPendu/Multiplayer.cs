@@ -13,7 +13,7 @@ namespace JeuxDuPendu
         private int _messageCount { get; set; }
         private int _messageBoxIndex { get; set; }
 
-        private GameData _gameData { get; set; }
+        private GameData? _gameData { get; set; }
         private Client Client { get; init; }
         private Server Server { get; init; }
 
@@ -125,14 +125,16 @@ namespace JeuxDuPendu
             {
                 if (Server != null)
                 {
-                    _gameData.PlayersList = Server.Users;
+                    if (Server.GameDatas.Count > 1)
+                        _gameData = Server.GameDatas.LastOrDefault();
+                    else
+                        _gameData!.PlayersList = Server.Users;
 
-                    if (Server.Users.Count > 0)
-                    {
+                    if (Server.Users.Count > 1)
                         await Server.SendJsonAsync(_gameData);
-                    }
 
-                    var bindingSource1 = new System.Windows.Forms.BindingSource { DataSource = _gameData.PlayersList };
+
+                    var bindingSource1 = new System.Windows.Forms.BindingSource { DataSource = _gameData!.PlayersList };
                     playerDataGrid.DataSource = bindingSource1;
 
                     if (Server.MessageList.Count > 0)
@@ -148,13 +150,12 @@ namespace JeuxDuPendu
                 {
                     if (Client.GameDatas.Count > 0)
                     {
+                        _gameData = Client.GameDatas.LastOrDefault();
                         var bindingSource1 = new System.Windows.Forms.BindingSource
-                            { DataSource = Client.GameDatas.FirstOrDefault()!.PlayersList };
+                            { DataSource = _gameData!.PlayersList };
                         playerDataGrid.DataSource = bindingSource1;
                     }
-                    /*
-                    playerDataGrid.DataSource = _gameData.PlayersList;
-                    */
+
 
                     if (Client.MessageList.Count > 0)
                     {
@@ -178,7 +179,7 @@ namespace JeuxDuPendu
 
         private async void button1_Click(object sender, EventArgs e)
         {
-            _gameData.CurrentLetterSet = textBox1.Text.FirstOrDefault();
+            _gameData!.CurrentLetterSet = textBox1.Text.FirstOrDefault();
 
             if (Client != null)
             {
