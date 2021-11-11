@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GameLib.rsc;
 using Tcp_Lib;
 
 namespace JeuxDuPendu
@@ -33,6 +34,8 @@ namespace JeuxDuPendu
             aTimer.Tick += aTimer_Tick!;
             aTimer.Interval = 1000; //milisecunde
             aTimer.Enabled = true;
+            _gameData = new GameData();
+            _gameData.PlayersList = new List<Host.User>();
         }
 
         public Multiplayer(Server server)
@@ -48,6 +51,7 @@ namespace JeuxDuPendu
             aTimer.Interval = 1000;
             aTimer.Enabled = true;
 
+            var word = Word.SelectRandomWord().Result.Text;
             _gameData = new GameData()
             {
                 PlayersList = new List<Host.User>() { Server.Users.FirstOrDefault() },
@@ -55,7 +59,7 @@ namespace JeuxDuPendu
                 CurrentTurn = 0,
                 CurrentPlayerSignal = Signals.WAIT,
                 CurrentLetterSet = char.MinValue,
-                CurrentWordDiscovered = string.Empty
+                CurrentWordDiscovered = word
             };
             Server.GameDatas.Add(_gameData);
         }
@@ -102,8 +106,6 @@ namespace JeuxDuPendu
 
         private void Multiplayer_Load(object sender, EventArgs e)
         {
-            _gameData = new GameData();
-            _gameData.PlayersList = new List<Host.User>();
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -121,6 +123,7 @@ namespace JeuxDuPendu
 
         private async Task Check()
         {
+            lCrypedWord.Text = _gameData!.CurrentWordDiscovered;
             try
             {
                 if (Server != null)

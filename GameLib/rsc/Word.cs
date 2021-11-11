@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameLib.rsc
@@ -22,25 +18,27 @@ namespace GameLib.rsc
 
         [Required] public Language Language { get; init; }
 
-        public async Task<Word> SelectRandomWord()
+        public static async Task<Word> SelectRandomWord()
         {
-            await using (ProgramDbContext context = new ProgramDbContext())
+            Word result = null;
+
+            try
             {
-                try
+                await using (ProgramDbContext context = new ProgramDbContext())
                 {
                     Random random = new Random();
                     int index = random.Next(await context.Words.CountAsync());
                     List<Word> words = await context.Words.ToListAsync();
-                    Word currentWord = words[index];
-
-                    return currentWord;
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
+                    result = words[index];
                 }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return result;
         }
     }
 
