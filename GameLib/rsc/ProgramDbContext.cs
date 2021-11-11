@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Tcp_Lib;
 
@@ -16,6 +14,7 @@ namespace GameLib.rsc
         {
             optionsBuilder.UseSqlite(ConnectionString);
         }
+
 
         public DbSet<Word> Words { get; set; }
         public DbSet<Server> Servers { get; set; }

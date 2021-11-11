@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Tcp_Lib;
-using GameLib;
 using Microsoft.EntityFrameworkCore;
+using Tcp_Lib;
 
 namespace JeuxDuPendu
 {
@@ -112,6 +106,7 @@ namespace JeuxDuPendu
 
         private async void connectionButton_Click(object sender, EventArgs e)
         {
+            var tasks = new List<Task>();
             Client client = new Client(PlayerName);
             await client.ConnectAsync(connectionTextBox.Text);
             if (client.ClientStream.Count > 0)
@@ -122,8 +117,7 @@ namespace JeuxDuPendu
                 multiplayer.Show();
             }
 
-            await Task.Run(client.ListenAsync);
-            await Task.Run(client.RecieveJsonAsync);
+            await Task.Run(client.LaunchProcess);
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
