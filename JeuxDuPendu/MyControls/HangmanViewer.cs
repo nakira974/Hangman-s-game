@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace JeuxDuPendu.MyControls
 {
@@ -49,6 +47,16 @@ namespace JeuxDuPendu.MyControls
         public void MoveNextStep()
         {
             _actualStep++;
+
+            if (_actualStep >= _stepCount)
+                _actualStep = _stepCount - 1;
+
+            ProcessStepChanged();
+        }
+
+        public async Task MoveNextStep(short step)
+        {
+            _actualStep = step;
 
             if (_actualStep >= _stepCount)
                 _actualStep = _stepCount - 1;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GameLib;
@@ -12,12 +13,26 @@ namespace JeuxDuPendu
 {
     public partial class ConnectionForm : Form
     {
+        public System.Windows.Forms.Timer ATimer = new System.Windows.Forms.Timer();
         private string _playerName { get; set; }
         private string _currentServerSelected { get; set; }
 
         public ConnectionForm()
         {
             InitializeComponent();
+            ATimer.Tick += aTimer_Tick!;
+            ATimer.Interval = 10000;
+            ATimer.Enabled = true;
+        }
+
+        async void aTimer_Tick(object sender, EventArgs e)
+        {
+            await Check();
+        }
+
+        private async Task Check()
+        {
+            await FillServerDataGrid();
         }
 
         private void serverList_SelectedIndexChanged(object sender, EventArgs e)
@@ -100,13 +115,29 @@ namespace JeuxDuPendu
 
         private async Task<List<Player.ServerListView>> PingServers(List<Player.ServerListView> servers)
         {
+            bool pingable = false;
+            Ping pinger = null;
+
             try
             {
+                pinger = new Ping();
+                servers.ForEach(srv =>
+                {
+                    PingReply reply = pinger.Send(srv.IpAddress);
+                    pingable = reply.Status == IPStatus.Success;
+                    srv.IsOnline = pingable;
+                });
             }
-            catch (Exception e)
+            catch (PingException)
             {
-                Console.WriteLine(e);
-                throw;
+                // Discard PingExceptions and return false;
+            }
+            finally
+            {
+                if (pinger != null)
+                {
+                    pinger.Dispose();
+                }
             }
 
             return servers;
