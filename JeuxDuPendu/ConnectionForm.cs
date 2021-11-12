@@ -87,6 +87,8 @@ namespace JeuxDuPendu
                     { DataSource = PingServers(registeredServers).Result };
                 serverDataGrid.DataSource = bindingSource1;
 
+                serverDataGrid.Columns[0].Visible = false;
+
                 return Task.CompletedTask;
             }
             catch (Exception e)
