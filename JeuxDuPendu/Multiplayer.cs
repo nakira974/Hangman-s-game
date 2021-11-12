@@ -210,6 +210,7 @@ namespace JeuxDuPendu
         {
             if (_hangmanViewer.IsGameOver)
             {
+                LastTurn = 0;
                 if (GameData!.CurrentHangmanState > 0)
                     MessageBox.Show("Vous avez perdu !");
                 StartNewGame();
@@ -224,7 +225,7 @@ namespace JeuxDuPendu
                     CurrentPlayerSignal = Signals.WAIT,
                     CurrentWordDiscovered = Ruler.HashedWord.ToString()
                 };
-
+                
                 await Server.SendJsonAsync(GameData);
             }
             else
