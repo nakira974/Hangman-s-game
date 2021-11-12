@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeuxDuPendu", "JeuxDuPendu\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLib", "GameLib\GameLib.csproj", "{F24A363B-1541-4B83-A5F9-85B8A84A9211}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tcp_Lib", "..\..\Csharp_Tcp_Lib\Tcp_Lib\Tcp_Lib.csproj", "{A13E3BB6-FBA2-4667-B0A6-EA3F16BE581C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tcp_Lib", "Tcp_Lib\Tcp_Lib.csproj", "{A44C6736-313F-476C-B947-B795AFEC9F9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{F24A363B-1541-4B83-A5F9-85B8A84A9211}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F24A363B-1541-4B83-A5F9-85B8A84A9211}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F24A363B-1541-4B83-A5F9-85B8A84A9211}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A13E3BB6-FBA2-4667-B0A6-EA3F16BE581C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A13E3BB6-FBA2-4667-B0A6-EA3F16BE581C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A13E3BB6-FBA2-4667-B0A6-EA3F16BE581C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A13E3BB6-FBA2-4667-B0A6-EA3F16BE581C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A44C6736-313F-476C-B947-B795AFEC9F9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A44C6736-313F-476C-B947-B795AFEC9F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A44C6736-313F-476C-B947-B795AFEC9F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A44C6736-313F-476C-B947-B795AFEC9F9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

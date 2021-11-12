@@ -15,6 +15,7 @@ namespace Tcp_Lib
         protected const int DefaultSendBufferSize = 1024;
         protected const int DefaultReceiveBufferSize = 4096;
         protected const int DefaultPort = 9001;
+        public int DataRecieve { get; set; }
         [NotMapped] public List<User> Users { get; set; }
         [NotMapped] public  Dictionary<int, NetworkStream> ClientStream { get; set; }
         [NotMapped] public List<string> MessageList { get; set; }
@@ -51,7 +52,20 @@ namespace Tcp_Lib
         }
         public abstract Task ConnectAsync();
         public abstract Task DisconnectAsync();
+        public abstract Task SendMessageAsync(string message);
+        public abstract Task SendJsonAsync(object obj);
+        public abstract Task ReceiveJsonAsync();
+        public abstract Task ListenAsync();
 
+        protected async IAsyncEnumerable<TcpClient> GetClientAsync(Dictionary<long, TcpClient> clients)
+        {
+            foreach (var client in clients)
+            {
+                yield return client.Value;
+            }
+        }
+        
+        
         public struct User
         {
             public string UserName { get; init; }

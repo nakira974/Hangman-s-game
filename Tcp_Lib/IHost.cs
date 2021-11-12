@@ -12,6 +12,11 @@ namespace Tcp_Lib
         public Task<string> ReceiveByteAsync();
         public Task ConnectAsync();
         public Task DisconnectAsync();
+        public Task SendMessageAsync(string message);
+        public Task SendJsonAsync(object obj);
+        public Task ReceiveJsonAsync();
+        public Task ListenAsync();
+
 
 
     }

@@ -18,6 +18,7 @@ namespace Tcp_Lib
 
         public Client()
         {
+            DataRecieve = 0;
             GameDatas = new List<GameData>();
             MessageList = new List<string>();
             ClientStream = new Dictionary<int, NetworkStream>();
@@ -32,6 +33,7 @@ namespace Tcp_Lib
 
         public Client(string senderName)
         {
+            DataRecieve = 0;
             SenderName = senderName;
             Users = new List<User>();
             Users.Add(new User()
@@ -77,7 +79,7 @@ namespace Tcp_Lib
 
         public override async Task Stop()
         {
-            throw new NotImplementedException();
+            await DisconnectAsync();
         }
 
         public async Task LaunchProcess()
@@ -85,7 +87,7 @@ namespace Tcp_Lib
             List<Task> jobs = new List<Task>()
             {
                 ListenAsync(),
-                RecieveJsonAsync()
+                ReceiveJsonAsync()
             };
 
             await Task.WhenAny(jobs);
@@ -118,7 +120,7 @@ namespace Tcp_Lib
 
         }
 
-        public async Task SendMessageAsync(string message)
+        public override async Task SendMessageAsync(string message)
         {
             byte[] bytes = new byte[] { };
             NetworkStream stream = ClientStream[1];
@@ -129,7 +131,7 @@ namespace Tcp_Lib
             await stream.WriteAsync(bytes, 0, bytes.Length);
         }
         
-        public async Task SendJsonAsync(object obj)
+        public override async Task SendJsonAsync(object obj)
         {
             string json = System.Text.Json.JsonSerializer.Serialize(obj);
             byte[] bytes = Encoding.UTF8.GetBytes(json);
@@ -162,7 +164,17 @@ namespace Tcp_Lib
         {
             try
             {
-                _ClientSocket.Client.Close();
+                await SendMessageAsync("0xffff");
+                ClientStream[1].Socket.DisconnectAsync(new SocketAsyncEventArgs(false));
+                ClientStream[1].Close();
+                ClientStream[1].Socket.Close();
+                await SendJsonAsync(new GameData()
+                {
+                    CurrentPlayerSignal = Signals.DISCONNECTED
+                });
+                ClientStream[2].Socket.DisconnectAsync(new SocketAsyncEventArgs(false));
+                ClientStream[2].Close();
+                ClientStream[2].Socket.Close();
             }
             catch (Exception e)
             {
@@ -172,7 +184,7 @@ namespace Tcp_Lib
 
         }
 
-        public async Task ListenAsync()
+        public override async Task ListenAsync()
         {
             byte[] currentBuffer = new byte[DefaultReceiveBufferSize];
             NetworkStream clientNetworkStream = ClientStream[1];
@@ -200,7 +212,7 @@ namespace Tcp_Lib
             } while (ClientStream[1].CanRead);
         }
         
-        public async Task RecieveJsonAsync()
+        public override async Task ReceiveJsonAsync()
         {
             byte[] currentBuffer = new byte[DefaultReceiveBufferSize];
             NetworkStream clientNetworkStream = ClientStream[2];
@@ -222,6 +234,7 @@ namespace Tcp_Lib
                             GameData gameData =
                                 await System.Text.Json.JsonSerializer.DeserializeAsync<GameData>(mStrm, cancellationToken:CancellationToken.None);
                             GameDatas.Add(gameData);
+                            DataRecieve++;
                         }
 
                     } while (ClientStream[2].CanRead);

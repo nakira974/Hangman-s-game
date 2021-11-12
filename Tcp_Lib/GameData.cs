@@ -22,5 +22,8 @@ namespace Tcp_Lib
         [JsonPropertyName("CurrentWordDiscovered")]
         public string CurrentWordDiscovered { get; set; }
         
+        [JsonPropertyName("CurrentHangmanState")]
+        public short CurrentHangmanState { get; set; }
+        
     };
 }
