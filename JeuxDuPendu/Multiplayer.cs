@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GameLib;
@@ -72,12 +73,12 @@ namespace JeuxDuPendu
             Server.GameDatas.Add(GameData);
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
         {
             if (Client != null)
-                Client.Stop();
+                await Client.Stop();
             if (Server != null)
-                Server.Stop();
+                await Server.Stop();
             this.Hide();
             ConnectionForm connectionMenu = new ConnectionForm();
             connectionMenu.Closed += (s, args) => this.Close();
@@ -147,12 +148,6 @@ namespace JeuxDuPendu
             {
                 throw ex;
             }
-
-            if (_hangmanViewer.IsGameOver)
-            {
-                MessageBox.Show("Vous avez perdu !");
-                StartNewGame();
-            }
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -213,70 +208,104 @@ namespace JeuxDuPendu
 
         private async Task ServerCheck()
         {
-            if (Server.GameDatas.Count > 1)
+            if (_hangmanViewer.IsGameOver)
             {
-                if (Server.GameDatas.Count > GameDataCount)
+                if (GameData!.CurrentHangmanState > 0)
+                    MessageBox.Show("Vous avez perdu !");
+                StartNewGame();
+                Ruler.NewGame();
+                GameData = new GameData()
                 {
-                    GameData = Server.GameDatas.LastOrDefault();
-                    GameDataCount++;
-                    if (GameData!.CurrentTurn > LastTurn)
-                    {
-                        LastTurn++;
+                    PlayersList = GameData!.PlayersList,
+                    CurrentLetterSet = ' ',
+                    CurrentPlayer = Server.SenderName,
+                    CurrentTurn = 0,
+                    CurrentHangmanState = 0,
+                    CurrentPlayerSignal = Signals.WAIT,
+                    CurrentWordDiscovered = Ruler.HashedWord.ToString()
+                };
 
-                        if (Ruler.TryAppendCharacter(GameData!.CurrentLetterSet).Result)
+                await Server.SendJsonAsync(GameData);
+            }
+            else
+            {
+                if (Server.GameDatas.Count > 1)
+                {
+                    if (Server.GameDatas.Count > GameDataCount)
+                    {
+                        GameData = Server.GameDatas.LastOrDefault();
+                        GameDataCount++;
+                        if (GameData!.CurrentTurn > LastTurn)
                         {
-                            GameData.CurrentWordDiscovered = Ruler.HashedWord.ToString();
-                            lCrypedWord.Text = GameData!.CurrentWordDiscovered;
-                        }
-                        else
-                        {
-                            GameData.CurrentHangmanState++;
-                            await _hangmanViewer.MoveNextStep(GameData.CurrentHangmanState);
+                            LastTurn++;
+
+                            if (Ruler.TryAppendCharacter(GameData!.CurrentLetterSet).Result)
+                            {
+                                GameData.CurrentWordDiscovered = Ruler.HashedWord.ToString();
+                                lCrypedWord.Text = GameData!.CurrentWordDiscovered;
+                            }
+                            else
+                            {
+                                GameData.CurrentHangmanState++;
+                                await _hangmanViewer.MoveNextStep(GameData.CurrentHangmanState);
+                            }
                         }
                     }
                 }
-            }
-            else
+
                 GameData!.PlayersList = Server.Users;
 
-            if (Server.Users.Count > 1)
-                await Server.SendJsonStreamAsync(GameData);
-            var bindingSource1 = new System.Windows.Forms.BindingSource { DataSource = GameData!.PlayersList };
-            playerDataGrid.DataSource = bindingSource1;
+                if (Server.Users.Count > 1)
+                    await Server.SendJsonStreamAsync(GameData);
+                var bindingSource1 = new System.Windows.Forms.BindingSource { DataSource = GameData!.PlayersList };
+                playerDataGrid.DataSource = bindingSource1;
 
-            if (Server.MessageList.Count > 0)
-            {
-                if (Server.MessageList.Count > MessageCount)
+                if (Server.MessageList.Count > 0)
                 {
-                    MessageCount++;
-                    listBox1.Items.Add(Server.MessageList.Last());
+                    if (Server.MessageList.Count > MessageCount)
+                    {
+                        MessageCount++;
+                        listBox1.Items.Add(Server.MessageList.Last());
+                    }
                 }
             }
         }
 
         private async Task ClientCheck()
         {
-            if (Client.GameDatas.Count > 0)
+            if (_hangmanViewer.IsGameOver)
             {
+                if (GameData!.CurrentHangmanState > 0)
+                    MessageBox.Show("Vous avez perdu !");
+                GameData.CurrentHangmanState = 0;
+                StartNewGame();
+                Thread.Sleep(2000);
                 GameData = Client.GameDatas.LastOrDefault();
-                var bindingSource1 = new System.Windows.Forms.BindingSource
-                    { DataSource = GameData!.PlayersList };
-                playerDataGrid.DataSource = bindingSource1;
-                if (Client.GameDatas.Count > GameDataCount)
-                {
-                    GameDataCount++;
-                    lCrypedWord.Text = GameData!.CurrentWordDiscovered;
-                    await _hangmanViewer.MoveNextStep(GameData.CurrentHangmanState);
-                }
             }
-
-
-            if (Client.MessageList.Count > 0)
+            else
             {
-                if (Client.MessageList.Count > MessageCount)
+                if (Client.GameDatas.Count > 0)
                 {
-                    MessageCount++;
-                    listBox1.Items.Add(Client.MessageList.Last());
+                    GameData = Client.GameDatas.LastOrDefault();
+                    var bindingSource1 = new System.Windows.Forms.BindingSource
+                        { DataSource = GameData!.PlayersList };
+                    playerDataGrid.DataSource = bindingSource1;
+                    if (Client.GameDatas.Count > GameDataCount)
+                    {
+                        GameDataCount++;
+                        lCrypedWord.Text = GameData!.CurrentWordDiscovered;
+                        await _hangmanViewer.MoveNextStep(GameData.CurrentHangmanState);
+                    }
+                }
+
+
+                if (Client.MessageList.Count > 0)
+                {
+                    if (Client.MessageList.Count > MessageCount)
+                    {
+                        MessageCount++;
+                        listBox1.Items.Add(Client.MessageList.Last());
+                    }
                 }
             }
         }

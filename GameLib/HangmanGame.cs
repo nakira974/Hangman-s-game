@@ -7,14 +7,13 @@ namespace GameLib
 {
     public class HangmanGame : GameRules<HangmanGame>
     {
-        private Word _hiddenWord { get; init; }
+        private char _lastCharDiscovered { get; set; }
+        private Word _hiddenWord { get; set; }
         public StringBuilder HashedWord { get; set; }
 
         public HangmanGame()
         {
-            _hiddenWord = Word.SelectRandomWord().Result;
-            HashedWord = new StringBuilder(_hiddenWord.Text);
-            HashWord();
+            NewGame();
         }
 
         private void HashWord()
@@ -38,8 +37,9 @@ namespace GameLib
             bool result = false;
             try
             {
-                if (_hiddenWord.Text.Contains(character))
+                if (_hiddenWord.Text.Contains(character) && character != _lastCharDiscovered)
                 {
+                    _lastCharDiscovered = character;
                     result = true;
                     for (int i = 0; i <= _hiddenWord.Text.Length - 1; i++)
                     {
@@ -55,6 +55,14 @@ namespace GameLib
             }
 
             return result;
+        }
+
+        public void NewGame()
+        {
+            _lastCharDiscovered = char.MinValue;
+            _hiddenWord = Word.SelectRandomWord().Result;
+            HashedWord = new StringBuilder(_hiddenWord.Text);
+            HashWord();
         }
     }
 }
