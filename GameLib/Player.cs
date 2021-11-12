@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Tcp_Lib;
 
 namespace GameLib
 {
@@ -14,9 +9,9 @@ namespace GameLib
         [Required]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; init; }
+        public int PlayerId { get; init; }
 
-        [Required] [ForeignKey("PlayerId")] public virtual ICollection<Server> Severs { get; set; }
+        [Required] [ForeignKey("Id")] public virtual ICollection<ServerListView> Severs { get; set; }
 
         [Required] public string Name { get; init; }
 
@@ -27,6 +22,15 @@ namespace GameLib
         public Player(string name)
         {
             Name = name;
+        }
+
+        public sealed class ServerListView
+        {
+            [ForeignKey("PlayerId")] public Player Player { get; set; }
+            public string IpAddress { get; set; }
+            public int Id { get; set; }
+
+            public bool IsOnline { get; set; }
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GameLib;
+using GameLib.rsc;
 using Microsoft.EntityFrameworkCore;
 using Tcp_Lib;
 
@@ -10,7 +12,8 @@ namespace JeuxDuPendu
 {
     public partial class ConnectionForm : Form
     {
-        private string PlayerName { get; set; }
+        private string _playerName { get; set; }
+        private string _currentServerSelected { get; set; }
 
         public ConnectionForm()
         {
@@ -31,7 +34,7 @@ namespace JeuxDuPendu
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Server server = new Server(PlayerName);
+            Server server = new Server(_playerName);
             Task startTask = server.Start();
             this.Hide();
             Multiplayer multiplayer = new Multiplayer(server);
@@ -50,21 +53,39 @@ namespace JeuxDuPendu
 
         private Task FillServerDataGrid()
         {
-            List<Server> registeredServers = new List<Server>();
+            List<Player.ServerListView> registeredServers = new List<Player.ServerListView>();
 
             try
             {
                 using (GameLib.rsc.ProgramDbContext context = new GameLib.rsc.ProgramDbContext())
                 {
+                    if (!context.Players.Any())
+                    {
+                        var player = new Player()
+                        {
+                            Name = "nakira974",
+                            PlayerId = 1,
+                            Severs = new List<Player.ServerListView>() { }
+                        };
+                        player.Severs.Add(new Player.ServerListView()
+                        {
+                            Player = player,
+                            Id = 1,
+                            IpAddress = "localhost",
+                            IsOnline = false
+                        });
+                        context.Players.Add(player);
+                        context.SaveChanges();
+                    }
+
                     context.Players.Include(collection => collection.Severs);
                     var servers = context.Players.Select(x => x.Severs).FirstOrDefaultAsync().Result;
-                    foreach (var server in servers)
-                    {
-                        registeredServers.Add(server);
-                    }
+                    registeredServers = servers.ToList();
                 }
 
-                serverDataGrid.DataSource = PingServers(registeredServers).Result;
+                var bindingSource1 = new System.Windows.Forms.BindingSource
+                    { DataSource = PingServers(registeredServers).Result };
+                serverDataGrid.DataSource = bindingSource1;
 
                 return Task.CompletedTask;
             }
@@ -75,21 +96,10 @@ namespace JeuxDuPendu
             }
         }
 
-        private async Task<List<ServerListView>> PingServers(List<Server> servers)
+        private async Task<List<Player.ServerListView>> PingServers(List<Player.ServerListView> servers)
         {
-            List<ServerListView> result = new List<ServerListView>();
-
             try
             {
-                foreach (var server in servers)
-                {
-                    result.Add(new ServerListView()
-                    {
-                        Id = server.Id,
-                        IpAddress = server.CurrentIpAddress.ToString(),
-                        IsOnline = false
-                    });
-                }
             }
             catch (Exception e)
             {
@@ -97,17 +107,18 @@ namespace JeuxDuPendu
                 throw;
             }
 
-            return result;
+            return servers;
         }
 
         private void connectionTextBox_TextChanged(object sender, EventArgs e)
         {
+            _currentServerSelected = connectionTextBox.Text;
         }
 
         private async void connectionButton_Click(object sender, EventArgs e)
         {
             var tasks = new List<Task>();
-            Client client = new Client(PlayerName);
+            Client client = new Client(_playerName);
             await client.ConnectAsync(connectionTextBox.Text);
             if (client.ClientStream.Count > 0)
             {
@@ -122,15 +133,63 @@ namespace JeuxDuPendu
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            PlayerName = textBox1.Text;
+            _playerName = textBox1.Text;
         }
-    }
 
-    public class ServerListView
-    {
-        public string IpAddress { get; set; }
-        public int Id { get; set; }
+        private async void button3_Click(object sender, EventArgs e)
+        {
+            await using (ProgramDbContext context = new ProgramDbContext())
+            {
+                context.Players.Include(collection => collection.Severs);
+                await foreach (Player.ServerListView? server in GetServerAsync())
+                {
+                    var player = context.Players.FirstOrDefaultAsync().Result;
+                    var currentServerToRemove = context.Servers.FirstOrDefaultAsync(x => x.Id == server!.Id).Result;
+                    player.Severs.Remove(currentServerToRemove);
+                }
 
-        public bool IsOnline { get; set; }
+                await context.SaveChangesAsync();
+                await FillServerDataGrid();
+            }
+        }
+
+        private async void button2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                await using (ProgramDbContext context = new ProgramDbContext())
+                {
+                    context.Players.Include(collection => collection.Severs);
+                    var server = new Player.ServerListView()
+                    {
+                        IpAddress = _currentServerSelected
+                    };
+                    var player = context.Players.FirstOrDefaultAsync().Result;
+                    if (player.Severs == null)
+                        player.Severs = new List<Player.ServerListView>();
+                    player.Severs.Add(server);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                throw;
+            }
+
+
+            await FillServerDataGrid();
+        }
+
+
+        async IAsyncEnumerable<Player.ServerListView?> GetServerAsync()
+        {
+            foreach (DataGridViewRow selectedRow in serverDataGrid.SelectedRows)
+            {
+                yield return selectedRow.DataBoundItem is Player.ServerListView
+                    ? (Player.ServerListView)selectedRow.DataBoundItem
+                    : default;
+            }
+        }
     }
 }

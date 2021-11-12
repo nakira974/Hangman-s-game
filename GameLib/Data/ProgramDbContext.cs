@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Tcp_Lib;
 
 namespace GameLib.rsc
 {
@@ -17,7 +16,7 @@ namespace GameLib.rsc
 
 
         public DbSet<Word> Words { get; set; }
-        public DbSet<Server> Servers { get; set; }
+        public DbSet<Player.ServerListView> Servers { get; set; }
         public DbSet<Player> Players { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -46,13 +45,17 @@ namespace GameLib.rsc
                 }
             }
 
-            modelBuilder.Entity<Player>().HasKey(c => c.Id);
+            modelBuilder.Entity<Player>().HasKey(c => c.PlayerId);
             modelBuilder.Entity<Player>()
-                .HasMany<Server>(g => g.Severs);
+                .HasMany<Player.ServerListView>(b => b.Severs)
+                .WithOne(b => b.Player);
+            modelBuilder.Entity<Player>().Navigation(b => b.Severs)
+                .UsePropertyAccessMode(PropertyAccessMode.FieldDuringConstruction);
             modelBuilder.Entity<Player>().ToTable("Players");
 
-            modelBuilder.Entity<Server>().HasKey(c => c.Id);
-            modelBuilder.Entity<Server>().ToTable("Servers");
+
+            modelBuilder.Entity<Player.ServerListView>().HasKey(c => c.Id);
+            modelBuilder.Entity<Player.ServerListView>().ToTable("Servers");
         }
 
         private IEnumerable<string> GetLinesAsync(string[] lines)

@@ -3,16 +3,14 @@ using System;
 using GameLib.rsc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GameLib.Migrations
 {
     [DbContext(typeof(ProgramDbContext))]
-    [Migration("20211106220239_addSeverAndPlayer2")]
-    partial class addSeverAndPlayer2
+    partial class ProgramDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -20,7 +18,7 @@ namespace GameLib.Migrations
 
             modelBuilder.Entity("GameLib.Player", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("PlayerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -28,9 +26,31 @@ namespace GameLib.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("PlayerId");
 
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("GameLib.Player+ServerListView", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsOnline")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("PlayerId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("Servers");
                 });
 
             modelBuilder.Entity("GameLib.rsc.Word", b =>
@@ -60059,30 +60079,13 @@ namespace GameLib.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Tcp_Lib.Server", b =>
+            modelBuilder.Entity("GameLib.Player+ServerListView", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CurrentIpAddress")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("ServerId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ServerId");
-
-                    b.ToTable("Servers");
-                });
-
-            modelBuilder.Entity("Tcp_Lib.Server", b =>
-                {
-                    b.HasOne("GameLib.Player", null)
+                    b.HasOne("GameLib.Player", "Player")
                         .WithMany("Severs")
-                        .HasForeignKey("ServerId");
+                        .HasForeignKey("PlayerId");
+
+                    b.Navigation("Player");
                 });
 
             modelBuilder.Entity("GameLib.Player", b =>
