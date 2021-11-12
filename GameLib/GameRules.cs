@@ -5,7 +5,8 @@ namespace GameLib
 {
     public abstract class GameRules<T> : IGameRules<T>
     {
-        public IEnumerable<Player> Players { get; init; }
+        public bool IsGameWon { get; set; }
+        private IEnumerable<Player> Players { get; init; }
 
         protected GameRules()
         {

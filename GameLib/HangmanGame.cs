@@ -45,6 +45,7 @@ namespace GameLib
                     {
                         if (character == _hiddenWord.Text[i])
                             HashedWord[i] = character;
+                        IsGameWon = HashedWord.ToString() == _hiddenWord.Text;
                     }
                 }
             }

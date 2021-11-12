@@ -168,6 +168,8 @@ namespace JeuxDuPendu
                 if (Ruler.TryAppendCharacter(GameData!.CurrentLetterSet).Result)
                 {
                     GameData.CurrentWordDiscovered = Ruler.HashedWord.ToString();
+                    if (Ruler.IsGameWon)
+                        await ServerLaunchNewGame(true);
                 }
                 else
                 {
@@ -176,12 +178,12 @@ namespace JeuxDuPendu
                 }
 
                 GameData.CurrentTurn++;
-                await Server.SendJsonAsync(GameData);
+                await Server.SendJsonStreamAsync(GameData);
             }
         }
 
 
-        public void StartNewGame()
+        private void StartNewGame()
         {
             // Methode de reinitialisation classe d'affichage du pendu.
             _hangmanViewer.Reset();
@@ -209,25 +211,11 @@ namespace JeuxDuPendu
         private async Task ServerCheck()
         {
             if (_hangmanViewer.IsGameOver)
-            {
-                LastTurn = 0;
-                if (GameData!.CurrentHangmanState > 0)
-                    MessageBox.Show("Vous avez perdu !");
-                StartNewGame();
-                Ruler.NewGame();
-                GameData = new GameData()
-                {
-                    PlayersList = GameData!.PlayersList,
-                    CurrentLetterSet = ' ',
-                    CurrentPlayer = Server.SenderName,
-                    CurrentTurn = 0,
-                    CurrentHangmanState = 0,
-                    CurrentPlayerSignal = Signals.WAIT,
-                    CurrentWordDiscovered = Ruler.HashedWord.ToString()
-                };
-                
-                await Server.SendJsonAsync(GameData);
-            }
+                await ServerLaunchNewGame(false);
+            
+            else if(Ruler.IsGameWon)
+                await ServerLaunchNewGame(true);
+            
             else
             {
                 if (Server.GameDatas.Count > 1)
@@ -309,6 +297,28 @@ namespace JeuxDuPendu
                     }
                 }
             }
+        }
+
+        private async Task ServerLaunchNewGame(bool isWon)
+        {
+            LastTurn = 0;
+            if (GameData!.CurrentHangmanState > 0 && !isWon)
+                MessageBox.Show("Vous avez perdu !");
+            GameData.CurrentHangmanState = 0;
+            StartNewGame();
+            Ruler.NewGame();
+            GameData = new GameData()
+            {
+                PlayersList = GameData!.PlayersList,
+                CurrentLetterSet = ' ',
+                CurrentPlayer = Server.SenderName,
+                CurrentTurn = 0,
+                CurrentHangmanState = 0,
+                CurrentPlayerSignal = Signals.WAIT,
+                CurrentWordDiscovered = Ruler.HashedWord.ToString()
+            };
+                
+            await Server.SendJsonAsync(GameData);
         }
     }
 }
