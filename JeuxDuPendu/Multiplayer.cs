@@ -211,7 +211,11 @@ namespace JeuxDuPendu
         private async Task ServerCheck()
         {
             if (_hangmanViewer.IsGameOver)
+            {
+                GameData!.CurrentWordDiscovered = Ruler.GetHiddenWord();
+                await Server.SendJsonStreamAsync(GameData);
                 await ServerLaunchNewGame(false);
+            }
             
             else if(Ruler.IsGameWon)
                 await ServerLaunchNewGame(true);

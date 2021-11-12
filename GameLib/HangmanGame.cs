@@ -65,5 +65,10 @@ namespace GameLib
             HashedWord = new StringBuilder(_hiddenWord.Text);
             HashWord();
         }
+
+        public string GetHiddenWord()
+        {
+            return _hiddenWord.Text;
+        }
     }
 }
