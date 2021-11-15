@@ -7,7 +7,7 @@ namespace GameLib.rsc
     public class ProgramDbContext : DbContext
     {
         private readonly string ConnectionString =
-            @"Data Source=D:rsc\Dictionary.db";
+            @"Data Source=rsc\Dictionary.db";
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -31,7 +31,7 @@ namespace GameLib.rsc
 
             var count = 0;
             foreach (var line in GetLinesAsync(
-                File.ReadAllLines(@"D:\RiderProjects\BackUp\JeuxDuPendu\GameLib\rsc\fr.dic")))
+                File.ReadAllLines(@"rsc\fr.dic")))
             {
                 if (line.Length >= 5 && line.Length <= 10 && count <= 10000)
                 {

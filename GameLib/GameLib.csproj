@@ -28,7 +28,11 @@
     <ItemGroup>
         <None Remove="rsc\Dictionary.db" />
         <EmbeddedResource Include="rsc\Dictionary.db">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
+        <None Remove="rsc\fr.dic" />
+        <EmbeddedResource Include="rsc\fr.dic">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </EmbeddedResource>
     </ItemGroup>
 
