@@ -98,6 +98,7 @@ namespace Tcp_Lib
             try
             {
                 //Listen stream
+                
                 byte[] bytes = Encoding.Latin1.GetBytes(SenderName);
                 await _ClientSocket.ConnectAsync(ipAddress, DefaultPort);
                 NetworkStream stream = _ClientSocket.GetStream();

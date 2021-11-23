@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
+using GameLib;
 using JeuxDuPendu.MyControls;
 
 namespace JeuxDuPendu
@@ -9,7 +11,7 @@ namespace JeuxDuPendu
     {
         // Initialisation de l'instance de la classe d'affichage du pendu.
         HangmanViewer _HangmanViewer = new HangmanViewer();
-
+        private HangmanGame Ruler = new HangmanGame();
         /// <summary>
         /// Constructeur du formulaire de jeux
         /// </summary>
@@ -18,6 +20,7 @@ namespace JeuxDuPendu
             InitializeComponent();
             InitializeMyComponent();
             StartNewGame();
+            lCrypedWord.Text = Ruler.HashedWord.ToString();
         }
 
         /// <summary>
@@ -40,11 +43,12 @@ namespace JeuxDuPendu
         /// </summary>
         public void StartNewGame()
         {
+            Ruler.NewGame();
+            lCrypedWord.Text = Ruler.HashedWord.ToString(); 
             // Methode de reinitialisation classe d'affichage du pendu.
             _HangmanViewer.Reset();
 
             //Affichage du mot à trouver dans le label.
-            lCrypedWord.Text = "_____";
         }
 
 
@@ -75,7 +79,14 @@ namespace JeuxDuPendu
         private void KeyPressed(char letter)
         {
             // On avance le pendu d'une etape
-            _HangmanViewer.MoveNextStep();
+            if (Ruler.TryAppendCharacter(letter).Result)
+            {
+                lCrypedWord.Text = Ruler.HashedWord.ToString();
+            }
+            else
+            {
+                _HangmanViewer.MoveNextStep();
+            }
 
             // Si le pendu est complet, le joueur à perdu.
             if (_HangmanViewer.IsGameOver)
@@ -87,6 +98,7 @@ namespace JeuxDuPendu
 
         private void button1_Click(object sender, EventArgs e)
         {
+            KeyPressed(textBox1.Text.First());
         }
 
         private void GameForm_Load(object sender, EventArgs e)
@@ -97,7 +109,7 @@ namespace JeuxDuPendu
         {
             //TO DO 
             //Implémenter les règles du jeu ici. 
-            lCrypedWord.Text = textBox1.Text;
+            
         }
 
         private void button2_Click(object sender, EventArgs e)

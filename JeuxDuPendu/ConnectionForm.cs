@@ -14,17 +14,23 @@ namespace JeuxDuPendu
     public partial class ConnectionForm : Form
     {
         public System.Windows.Forms.Timer ATimer = new System.Windows.Forms.Timer();
-        private string _playerName { get; set; }
-        private string _currentServerSelected { get; set; }
+        private string? _playerName { get; set; }
+        private string? _currentServerSelected { get; set; }
 
+        
         public ConnectionForm()
         {
             InitializeComponent();
             ATimer.Tick += aTimer_Tick!;
-            ATimer.Interval = 10000;
+            ATimer.Interval = 30000;
             ATimer.Enabled = true;
         }
 
+        /// <summary>
+        /// Timer qui appelle la fonction d'update de l'interface
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         async void aTimer_Tick(object sender, EventArgs e)
         {
             await Check();
@@ -59,6 +65,13 @@ namespace JeuxDuPendu
 
         private void serverDataGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
+
+            foreach (DataGridViewCell cell in serverDataGrid.SelectedCells)
+            {
+                _currentServerSelected = cell.Value.ToString();
+                break;
+            }
+
         }
 
         private void ConnectionForm_Load(object sender, EventArgs e)
@@ -66,6 +79,10 @@ namespace JeuxDuPendu
             FillServerDataGrid();
         }
 
+        /// <summary>
+        /// Se connecte à la db et rempli la datagridview et ping les serveurs en ligne.
+        /// </summary>
+        /// <returns></returns>
         private Task FillServerDataGrid()
         {
             List<Player.ServerListView> registeredServers = new List<Player.ServerListView>();
@@ -113,6 +130,11 @@ namespace JeuxDuPendu
             }
         }
 
+        /// <summary>
+        /// Ping les serveurs connectés et met leur variable isConnected à true si oui
+        /// </summary>
+        /// <param name="servers"></param>
+        /// <returns></returns>
         private async Task<List<Player.ServerListView>> PingServers(List<Player.ServerListView> servers)
         {
             bool pingable = false;
@@ -148,6 +170,11 @@ namespace JeuxDuPendu
             _currentServerSelected = connectionTextBox.Text;
         }
 
+        /// <summary>
+        /// Update de l'interface toute les 30 secondes
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void connectionButton_Click(object sender, EventArgs e)
         {
             var tasks = new List<Task>();
@@ -169,6 +196,11 @@ namespace JeuxDuPendu
             _playerName = textBox1.Text;
         }
 
+        /// <summary>
+        /// Permet de supprimer un serveur
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void button3_Click(object sender, EventArgs e)
         {
             await using (ProgramDbContext context = new ProgramDbContext())
@@ -186,6 +218,11 @@ namespace JeuxDuPendu
             }
         }
 
+        /// <summary>
+        /// Permet d'ajouter un serveur
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void button2_Click(object sender, EventArgs e)
         {
             try
@@ -215,6 +252,10 @@ namespace JeuxDuPendu
         }
 
 
+        /// <summary>
+        /// Itère les serveurs et récupère l'enumrable en async
+        /// </summary>
+        /// <returns></returns>
         async IAsyncEnumerable<Player.ServerListView?> GetServerAsync()
         {
             foreach (DataGridViewRow selectedRow in serverDataGrid.SelectedRows)

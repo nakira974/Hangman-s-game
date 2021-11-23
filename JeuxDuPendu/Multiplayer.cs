@@ -26,6 +26,10 @@ namespace JeuxDuPendu
         private HangmanGame Ruler { get; init; }
 
 
+        /// <summary>
+        /// Constructeur client
+        /// </summary>
+        /// <param name="client"></param>
         public Multiplayer(Client client)
         {
             InitializeComponent();
@@ -44,6 +48,10 @@ namespace JeuxDuPendu
             GameData.PlayersList = new List<Host.User>();
         }
 
+        /// <summary>
+        /// Constructeur serveur
+        /// </summary>
+        /// <param name="server"></param>
         public Multiplayer(Server server)
         {
             InitializeComponent();
@@ -73,6 +81,11 @@ namespace JeuxDuPendu
             Server.GameDatas.Add(GameData);
         }
 
+        /// <summary>
+        /// Stop le socket
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void button2_Click(object sender, EventArgs e)
         {
             if (Client != null)
@@ -93,6 +106,11 @@ namespace JeuxDuPendu
         {
         }
 
+        /// <summary>
+        /// Envoi un message à tous
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void button3_Click(object sender, EventArgs e)
         {
             if (Client != null)
@@ -124,12 +142,20 @@ namespace JeuxDuPendu
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
         }
-
+        /// <summary>
+        /// Est appellée chaque seconde grâce à un time tick
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         async void aTimer_Tick(object sender, EventArgs e)
         {
             await Check();
         }
 
+        /// <summary>
+        /// Méthode rafraichissant l'interface
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         private async Task Check()
         {
             lCrypedWord.Text = GameData!.CurrentWordDiscovered;
@@ -154,6 +180,11 @@ namespace JeuxDuPendu
         {
         }
 
+        /// <summary>
+        /// Teste la lettre et l'envoie à tout le monde
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void button1_Click(object sender, EventArgs e)
         {
             GameData!.CurrentLetterSet = textBox1.Text.FirstOrDefault();
@@ -183,6 +214,9 @@ namespace JeuxDuPendu
         }
 
 
+        /// <summary>
+        /// Lance une nouvelle partie
+        /// </summary>
         private void StartNewGame()
         {
             // Methode de reinitialisation classe d'affichage du pendu.
@@ -196,6 +230,9 @@ namespace JeuxDuPendu
         {
         }
 
+        /// <summary>
+        /// initialise le composant de jeu
+        /// </summary>
         private void InitializeGameComponent()
         {
             // On positionne le controle d'affichage du pendu dans panel1 : 
@@ -208,6 +245,9 @@ namespace JeuxDuPendu
             _hangmanViewer.Size = panel1.Size;
         }
 
+        /// <summary>
+        /// Update de l'interface serveur
+        /// </summary>
         private async Task ServerCheck()
         {
             if (_hangmanViewer.IsGameOver)
@@ -264,6 +304,9 @@ namespace JeuxDuPendu
             }
         }
 
+        /// <summary>
+        /// Update de l'interface client
+        /// </summary>
         private async Task ClientCheck()
         {
             if (_hangmanViewer.IsGameOver)
