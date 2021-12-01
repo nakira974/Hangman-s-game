@@ -1,21 +1,39 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using GameLib.rsc;
 
 namespace GameLib
 {
+    /// <summary>
+    /// Classe comportant les règles du jeu du pendu avec sélection d'un mot en base et hashage de ce dernier
+    /// </summary>
     public class HangmanGame : GameRules<HangmanGame>
     {
-        private char _lastCharDiscovered { get; set; }
-        private Word _hiddenWord { get; set; }
+        /// <summary>
+        /// Derniers char decouvert
+        /// </summary>
+        public List<char>LastCharDiscovered { get; set; }
+        /// <summary>
+        /// Mort caché selectionner en base
+        /// </summary>
+        private Word HiddenWord { get; set; }
+        /// <summary>
+        /// Mot hashé en stringbuilder
+        /// </summary>
         public StringBuilder HashedWord { get; set; }
 
         public HangmanGame()
         {
+            LastCharDiscovered = new List<char>(); 
             NewGame();
         }
 
+        /// <summary>
+        /// Hash le mot caché
+        /// </summary>
         private void HashWord()
         {
             try
@@ -32,20 +50,25 @@ namespace GameLib
             }
         }
 
+        /// <summary>
+        /// Essaie d'ajouter un char au mot caché si c'est bon retourne true
+        /// </summary>
+        /// <param name="character"></param>
+        /// <returns></returns>
         public async Task<bool> TryAppendCharacter(char character)
         {
             bool result = false;
             try
             {
-                if (_hiddenWord.Text.Contains(character) && character != _lastCharDiscovered)
+                if (HiddenWord.Text.Contains(character) && !LastCharDiscovered.Contains(character))
                 {
-                    _lastCharDiscovered = character;
+                    LastCharDiscovered.Add(character);
                     result = true;
-                    for (int i = 0; i <= _hiddenWord.Text.Length - 1; i++)
+                    for (int i = 0; i <= HiddenWord.Text.Length - 1; i++)
                     {
-                        if (character == _hiddenWord.Text[i])
+                        if (character == HiddenWord.Text[i])
                             HashedWord[i] = character;
-                        IsGameWon = HashedWord.ToString() == _hiddenWord.Text;
+                        IsGameWon = HashedWord.ToString() == HiddenWord.Text;
                     }
                 }
             }
@@ -58,17 +81,51 @@ namespace GameLib
             return result;
         }
 
+        /// <summary>
+        /// Lance une nouvelle partie et selectionne un mot.
+        /// </summary>
         public void NewGame()
         {
-            _lastCharDiscovered = char.MinValue;
-            _hiddenWord = Word.SelectRandomWord().Result;
-            HashedWord = new StringBuilder(_hiddenWord.Text);
+            IsGameWon = false;
+            LastCharDiscovered = new List<char>();
+            HiddenWord = Word.SelectRandomWord().Result;
+            WriteFile(HiddenWord.Text);
+            HashedWord = new StringBuilder(HiddenWord.Text);
             HashWord();
         }
 
+        /// <summary>
+        /// Retourne le mot caché en entier.
+        /// </summary>
+        /// <returns></returns>
         public string GetHiddenWord()
         {
-            return _hiddenWord.Text;
+            return HiddenWord.Text;
+        }
+        
+        private static Task WriteFile(string content)
+        {
+            try
+            {
+                using (StreamWriter outputWriter = File.AppendText(@"C:\temp\debugWord.txt"))
+                {
+                    string? tempLineValue;
+                
+                    outputWriter.WriteLine(content);
+
+
+                    outputWriter.Dispose();
+                }
+            
+                Console.Write($"{content} has been added to C:\\temp\\debugWord \n");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace JeuxDuPendu.MyControls
         private int _actualStep = 0;
 
         // Nombre totale d'etapes
-        private const int _stepCount = 11;
+        private const int StepCount = 11;
 
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace JeuxDuPendu.MyControls
         /// </summary>
         public bool IsGameOver
         {
-            get { return _actualStep + 1 >= _stepCount; }
+            get { return _actualStep + 1 >= StepCount; }
         }
 
         /// <summary>
@@ -48,8 +48,8 @@ namespace JeuxDuPendu.MyControls
         {
             _actualStep++;
 
-            if (_actualStep >= _stepCount)
-                _actualStep = _stepCount - 1;
+            if (_actualStep >= StepCount)
+                _actualStep = StepCount - 1;
 
             ProcessStepChanged();
         }
@@ -58,8 +58,8 @@ namespace JeuxDuPendu.MyControls
         {
             _actualStep = step;
 
-            if (_actualStep >= _stepCount)
-                _actualStep = _stepCount - 1;
+            if (_actualStep >= StepCount)
+                _actualStep = StepCount - 1;
 
             ProcessStepChanged();
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -10,8 +11,8 @@ namespace JeuxDuPendu
     public partial class GameForm : Form
     {
         // Initialisation de l'instance de la classe d'affichage du pendu.
-        HangmanViewer _HangmanViewer = new HangmanViewer();
-        private HangmanGame Ruler = new HangmanGame();
+        HangmanViewer _hangmanViewer = new HangmanViewer();
+        private HangmanGame _ruler = new HangmanGame();
         /// <summary>
         /// Constructeur du formulaire de jeux
         /// </summary>
@@ -20,7 +21,7 @@ namespace JeuxDuPendu
             InitializeComponent();
             InitializeMyComponent();
             StartNewGame();
-            lCrypedWord.Text = Ruler.HashedWord.ToString();
+            lCrypedWord.Text = _ruler.HashedWord.ToString();
         }
 
         /// <summary>
@@ -29,13 +30,13 @@ namespace JeuxDuPendu
         private void InitializeMyComponent()
         {
             // On positionne le controle d'affichage du pendu dans panel1 : 
-            panel1.Controls.Add(_HangmanViewer);
+            panel1.Controls.Add(_hangmanViewer);
 
             // à la position 0,0
-            _HangmanViewer.Location = new Point(0, 0);
+            _hangmanViewer.Location = new Point(0, 0);
 
             // et de la même taille que panel1
-            _HangmanViewer.Size = panel1.Size;
+            _hangmanViewer.Size = panel1.Size;
         }
 
         /// <summary>
@@ -43,10 +44,10 @@ namespace JeuxDuPendu
         /// </summary>
         public void StartNewGame()
         {
-            Ruler.NewGame();
-            lCrypedWord.Text = Ruler.HashedWord.ToString(); 
+            _ruler.NewGame();
+            lCrypedWord.Text = _ruler.HashedWord.ToString(); 
             // Methode de reinitialisation classe d'affichage du pendu.
-            _HangmanViewer.Reset();
+            _hangmanViewer.Reset();
 
             //Affichage du mot à trouver dans le label.
         }
@@ -66,6 +67,7 @@ namespace JeuxDuPendu
         private void GameForm_KeyPress(object sender, KeyPressEventArgs e)
         {
             KeyPressed(e.KeyChar);
+            textBox1.Text = e.KeyChar.ToString();
         }
 
         /// <summary>
@@ -78,21 +80,29 @@ namespace JeuxDuPendu
 
         private void KeyPressed(char letter)
         {
+            _ruler.LastCharDiscovered.Add(letter);
+            listBox1.Items.Add(_ruler.LastCharDiscovered.Last());
             // On avance le pendu d'une etape
-            if (Ruler.TryAppendCharacter(letter).Result)
+            if (_ruler.TryAppendCharacter(letter).Result)
             {
-                lCrypedWord.Text = Ruler.HashedWord.ToString();
+                lCrypedWord.Text = _ruler.HashedWord.ToString();
             }
             else
             {
-                _HangmanViewer.MoveNextStep();
+                _hangmanViewer.MoveNextStep();
             }
 
             // Si le pendu est complet, le joueur à perdu.
-            if (_HangmanViewer.IsGameOver)
+            if (_hangmanViewer.IsGameOver)
             {
                 MessageBox.Show("Vous avez perdu !");
                 StartNewGame();
+            }
+            else if (_ruler.IsGameWon)
+            {
+                MessageBox.Show("Vous avez gagné !");
+                StartNewGame();
+
             }
         }
 
@@ -122,6 +132,16 @@ namespace JeuxDuPendu
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

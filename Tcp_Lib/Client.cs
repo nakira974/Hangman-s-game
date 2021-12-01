@@ -13,7 +13,7 @@ namespace Tcp_Lib
     public class Client : Host
     {
         private Host _hostImplementation;
-        private TcpClient _ClientSocket { get; init; }
+        private TcpClient ClientSocket { get; init; }
         public IPAddress ServerAddress { get; set; }
 
         public Client()
@@ -23,14 +23,18 @@ namespace Tcp_Lib
             MessageList = new List<string>();
             ClientStream = new Dictionary<int, NetworkStream>();
             GetCurrentIpAddress();
-            _ClientSocket = new TcpClient();
-            _ClientSocket.SendBufferSize = DefaultSendBufferSize;
-            _ClientSocket.ReceiveBufferSize = DefaultReceiveBufferSize;
-            _ClientSocket.ReceiveTimeout = DefaultReceiveTimeOut;
-            _ClientSocket.SendTimeout = DefaultSendTimeOut;
+            ClientSocket = new TcpClient();
+            ClientSocket.SendBufferSize = DefaultSendBufferSize;
+            ClientSocket.ReceiveBufferSize = DefaultReceiveBufferSize;
+            ClientSocket.ReceiveTimeout = DefaultReceiveTimeOut;
+            ClientSocket.SendTimeout = DefaultSendTimeOut;
 
         }
 
+        /// <summary>
+        /// Constructeur public prenant en paramètre l'adresse du serveur à joindre
+        /// </summary>
+        /// <param name="senderName"></param>
         public Client(string senderName)
         {
             DataRecieve = 0;
@@ -44,11 +48,11 @@ namespace Tcp_Lib
             MessageList = new List<string>();
             ClientStream = new Dictionary<int, NetworkStream>();
             GetCurrentIpAddress();
-            _ClientSocket = new TcpClient();
-            _ClientSocket.SendBufferSize = DefaultSendBufferSize;
-            _ClientSocket.ReceiveBufferSize = DefaultReceiveBufferSize;
-            _ClientSocket.ReceiveTimeout = DefaultReceiveTimeOut;
-            _ClientSocket.SendTimeout = DefaultSendTimeOut;
+            ClientSocket = new TcpClient();
+            ClientSocket.SendBufferSize = DefaultSendBufferSize;
+            ClientSocket.ReceiveBufferSize = DefaultReceiveBufferSize;
+            ClientSocket.ReceiveTimeout = DefaultReceiveTimeOut;
+            ClientSocket.SendTimeout = DefaultSendTimeOut;
 
         }
 
@@ -82,6 +86,9 @@ namespace Tcp_Lib
             await DisconnectAsync();
         }
 
+        /// <summary>
+        /// Lance le flux d'envoi des messages et du json
+        /// </summary>
         public async Task LaunchProcess()
         {
             List<Task> jobs = new List<Task>()
@@ -93,6 +100,10 @@ namespace Tcp_Lib
             await Task.WhenAny(jobs);
         }
 
+        /// <summary>
+        /// Se connecte à un serveur spécifié en lançant un stream pour les messages et un autre pour le json 
+        /// </summary>
+        /// <param name="ipAddress"></param>
         public async Task ConnectAsync(string ipAddress)
         {
             try
@@ -100,8 +111,8 @@ namespace Tcp_Lib
                 //Listen stream
                 
                 byte[] bytes = Encoding.Latin1.GetBytes(SenderName);
-                await _ClientSocket.ConnectAsync(ipAddress, DefaultPort);
-                NetworkStream stream = _ClientSocket.GetStream();
+                await ClientSocket.ConnectAsync(ipAddress, DefaultPort);
+                NetworkStream stream = ClientSocket.GetStream();
                 await stream.WriteAsync(bytes, 0, bytes.Length);
                 ClientStream.Add(1, stream);
                 
@@ -121,17 +132,25 @@ namespace Tcp_Lib
 
         }
 
+        /// <summary>
+        /// Envoi un message au serveur
+        /// </summary>
+        /// <param name="message"></param>
         public override async Task SendMessageAsync(string message)
         {
             byte[] bytes = new byte[] { };
             NetworkStream stream = ClientStream[1];
             StringBuilder sb = new StringBuilder();
-            ConsoleKeyInfo Input;
+            ConsoleKeyInfo input;
             sb.Append(message);
             bytes = Encoding.Latin1.GetBytes(sb.ToString());
             await stream.WriteAsync(bytes, 0, bytes.Length);
         }
         
+        /// <summary>
+        /// Envoi un objet json vers le serveur
+        /// </summary>
+        /// <param name="obj"></param>
         public override async Task SendJsonAsync(object obj)
         {
             string json = System.Text.Json.JsonSerializer.Serialize(obj);
@@ -146,8 +165,8 @@ namespace Tcp_Lib
             {
                 string author = "Maxime";
                 byte[] bytes = Encoding.ASCII.GetBytes(author);
-                await _ClientSocket.ConnectAsync(CurrentIpAddress.ToString(), DefaultPort);
-                NetworkStream stream = _ClientSocket.GetStream();
+                await ClientSocket.ConnectAsync(CurrentIpAddress.ToString(), DefaultPort);
+                NetworkStream stream = ClientSocket.GetStream();
                 stream.Write(bytes, 0, bytes.Length);
 
 

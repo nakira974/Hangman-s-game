@@ -31,32 +31,32 @@ namespace Tcp_Lib
         [NotMapped] private Signals CurrentServerSignal { get; set; }
         
         [NotMapped]
-        private Dictionary<long, TcpClient> _tcpClients { get; set; }
+        private Dictionary<long, TcpClient> TcpClients { get; set; }
 
         [NotMapped]
-        private Dictionary<long, TcpClient> _jsonClients { get; set; }
+        private Dictionary<long, TcpClient> JsonClients { get; set; }
         
         [NotMapped]
-        private TcpListener _serverSocket { get; init; }
+        private TcpListener ServerSocket { get; init; }
         
         public Server()
         {
             DataRecieve = 0;
             GameDatas = new List<GameData>();
             MessageList = new List<string>();
-            _tcpClients = new Dictionary<long, TcpClient>();
-            _jsonClients = new Dictionary<long, TcpClient>();
+            TcpClients = new Dictionary<long, TcpClient>();
+            JsonClients = new Dictionary<long, TcpClient>();
             StopRequest = false;
             Token = new CancellationToken(StopRequest);
             ClientNumber = 0;
             ServerTasks = new List<Task>();
             ClientsPool = new List<ServerTask>();
             GetCurrentIpAddress();
-            _serverSocket = new TcpListener(CurrentIpAddress, Host.DefaultPort);
-            _serverSocket.Server.ReceiveBufferSize = DefaultReceiveBufferSize;
-            _serverSocket.Server.SendBufferSize = DefaultReceiveBufferSize;
-            _serverSocket.Server.ReceiveTimeout = DefaultReceiveTimeOut;
-            _serverSocket.Server.SendTimeout = DefaultSendTimeOut;
+            ServerSocket = new TcpListener(CurrentIpAddress, Host.DefaultPort);
+            ServerSocket.Server.ReceiveBufferSize = DefaultReceiveBufferSize;
+            ServerSocket.Server.SendBufferSize = DefaultReceiveBufferSize;
+            ServerSocket.Server.ReceiveTimeout = DefaultReceiveTimeOut;
+            ServerSocket.Server.SendTimeout = DefaultSendTimeOut;
         }
 
         public Server(string senderName)
@@ -70,19 +70,19 @@ namespace Tcp_Lib
                 UserName = SenderName
             });
             MessageList = new List<string>();
-            _tcpClients = new Dictionary<long, TcpClient>();
-            _jsonClients = new Dictionary<long, TcpClient>();
+            TcpClients = new Dictionary<long, TcpClient>();
+            JsonClients = new Dictionary<long, TcpClient>();
             StopRequest = false;
             Token = new CancellationToken(StopRequest);
             ClientNumber = 0;
             ServerTasks = new List<Task>();
             ClientsPool = new List<ServerTask>();
             GetCurrentIpAddress();
-            _serverSocket = new TcpListener(CurrentIpAddress, Host.DefaultPort);
-            _serverSocket.Server.ReceiveBufferSize = DefaultReceiveBufferSize;
-            _serverSocket.Server.SendBufferSize = DefaultReceiveBufferSize;
-            _serverSocket.Server.ReceiveTimeout = DefaultReceiveTimeOut;
-            _serverSocket.Server.SendTimeout = DefaultSendTimeOut;
+            ServerSocket = new TcpListener(CurrentIpAddress, Host.DefaultPort);
+            ServerSocket.Server.ReceiveBufferSize = DefaultReceiveBufferSize;
+            ServerSocket.Server.SendBufferSize = DefaultReceiveBufferSize;
+            ServerSocket.Server.ReceiveTimeout = DefaultReceiveTimeOut;
+            ServerSocket.Server.SendTimeout = DefaultSendTimeOut;
         }
         ~Server()
         {
@@ -98,18 +98,22 @@ namespace Tcp_Lib
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Lance le socket et attends les clients et lance les tâches associées
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
         public override async Task Start()
         {
             CurrentServerSignal = Signals.RUNNING;
             
             try
             {
-                _serverSocket.Start();
+                ServerSocket.Start();
                 do
                 {
                     byte[] currentBuffer = new byte[DefaultReceiveBufferSize];
                     
-                    var currentClient = await _serverSocket.AcceptTcpClientAsync();
+                    var currentClient = await ServerSocket.AcceptTcpClientAsync();
                     NetworkStream clientNetworkStream = currentClient.GetStream();
                     if (clientNetworkStream.CanRead)
                     {
@@ -151,6 +155,9 @@ namespace Tcp_Lib
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Arrête le serveur met l'attribut bool du cancellation token à true et appelle DisconnectAsync
+        /// </summary>
         public override async Task Stop()
         {
             StopRequest = true;
@@ -162,21 +169,29 @@ namespace Tcp_Lib
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Deconnecte le client et ferme le socket
+        /// </summary>
         public override async Task DisconnectAsync()
         {
-            await foreach (var client in GetClientAsync(_jsonClients).WithCancellation(Token))
+            await foreach (var client in GetClientAsync(JsonClients).WithCancellation(Token))
             {
                 client.Client.DisconnectAsync(new SocketAsyncEventArgs(true));
             }
 
-            await foreach (var client in GetClientAsync(_tcpClients).WithCancellation(Token))
+            await foreach (var client in GetClientAsync(TcpClients).WithCancellation(Token))
             {
                 client.Client.DisconnectAsync(new SocketAsyncEventArgs(true));
 
             }
-            _serverSocket.Server.Close();
+            ServerSocket.Server.Close();
         }
 
+        /// <summary>
+        /// Lance une novuelle tâche d'écoute d'un client json
+        /// </summary>
+        /// <param name="currentClient"></param>
+        /// <param name="clientNetworkStream"></param>
         private async Task LaunchJsonStream(TcpClient currentClient, NetworkStream clientNetworkStream)
         {
             var currentJsonRecieveTask = ReceiveJsonAsync(currentClient, clientNetworkStream);
@@ -189,7 +204,12 @@ namespace Tcp_Lib
             });
             await Task.WhenAll(ServerTasks);
         }
-        
+        /// <summary>
+        /// Lance une nouvelle tâche d'écoute d'un client
+        /// </summary>
+        /// <param name="currentClient"></param>
+        /// <param name="clientNetworkStream"></param>
+        /// <param name="user"></param>
         public async Task LaunchMessageStream(TcpClient currentClient, NetworkStream clientNetworkStream, User user)
         {
             var currentListenTask = ListenAsync(currentClient, clientNetworkStream, user);
@@ -203,11 +223,17 @@ namespace Tcp_Lib
                             
             await Task.WhenAll(ServerTasks);
         }
+        /// <summary>
+        /// Tâche d'écoute des méssages 
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="clientNetworkStream"></param>
+        /// <param name="user"></param>
         private async Task ListenAsync(TcpClient client, NetworkStream clientNetworkStream, User user)
         {
             try
             {
-                _tcpClients.Add(ClientNumber, client);
+                TcpClients.Add(ClientNumber, client);
                 long currentClientId = ClientNumber;
                 ClientNumber++;
                 GameData gameData = new GameData();
@@ -240,8 +266,8 @@ namespace Tcp_Lib
                                                 $"\n{user.UserName} said :{currentStringBuilder.ToString()}\n";
                                             if (currentStringBuilder.ToString() == "0xffff")
                                             {
-                                                _tcpClients[currentClientId].Dispose();
-                                                _tcpClients.Remove(currentClientId);
+                                                TcpClients[currentClientId].Dispose();
+                                                TcpClients.Remove(currentClientId);
                                                 Users.Remove(user);
                                             }
                                             else
@@ -277,11 +303,16 @@ namespace Tcp_Lib
             }
         }
 
+        /// <summary>
+        /// Tâche d'écoute d'un client json
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="clientNetworkStream"></param>
         private async Task ReceiveJsonAsync(TcpClient client, NetworkStream clientNetworkStream)
         {
             try
             {
-                _jsonClients.Add(ClientNumber, client);
+                JsonClients.Add(ClientNumber, client);
                 long currentClientId = ClientNumber;
                 ClientNumber++;
                 GameData gameData = new GameData();
@@ -320,8 +351,8 @@ namespace Tcp_Lib
                                             DataRecieve++;
                                             if (gameData.CurrentPlayerSignal == Signals.DISCONNECTED)
                                             {
-                                                _jsonClients[currentClientId].Dispose();
-                                                _jsonClients.Remove(currentClientId);
+                                                JsonClients[currentClientId].Dispose();
+                                                JsonClients.Remove(currentClientId);
                                             }
                                             else
                                             {
@@ -354,6 +385,10 @@ namespace Tcp_Lib
             }
         }
 
+        /// <summary>
+        /// Diffuse un message envoyé au serveur à l'ensemble des clients en l'ajoutant dans la liste des messages
+        /// </summary>
+        /// <param name="message"></param>
         private async Task BroadcastAsync(string message)
         {
 
@@ -363,7 +398,7 @@ namespace Tcp_Lib
                 MessageList.Add(message);
                 byte[] bytes = Encoding.Latin1.GetBytes(message);
 
-                await foreach (var client in GetClientAsync(_tcpClients).WithCancellation(Token))
+                await foreach (var client in GetClientAsync(TcpClients).WithCancellation(Token))
                 {
                     await client.Client.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
                 }
@@ -375,7 +410,10 @@ namespace Tcp_Lib
             }
            
         }
-        
+        /// <summary>
+        /// Envoie un message provenant du serveur vers tous les clients
+        /// </summary>
+        /// <param name="message"></param>
         public override async Task SendMessageAsync(string message)
         {
 
@@ -385,7 +423,7 @@ namespace Tcp_Lib
                 MessageList.Add(message);
                 byte[] bytes = Encoding.Latin1.GetBytes(message);
 
-                await foreach (var client in GetClientAsync(_tcpClients).WithCancellation(Token))
+                await foreach (var client in GetClientAsync(TcpClients).WithCancellation(Token))
                 {
                     await client.Client.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
                 }
@@ -397,7 +435,10 @@ namespace Tcp_Lib
             }
            
         }
-        
+        /// <summary>
+        /// Sérialise et envoie un objet json à l'ensemble des clients
+        /// </summary>
+        /// <param name="obj"></param>
         public override async Task SendJsonAsync(object obj)
         {
 
@@ -407,7 +448,7 @@ namespace Tcp_Lib
                 string json = System.Text.Json.JsonSerializer.Serialize(obj);
                 byte[] bytes = Encoding.UTF8.GetBytes(json);
 
-                await foreach (var client in GetClientAsync(_jsonClients).WithCancellation(Token))
+                await foreach (var client in GetClientAsync(JsonClients).WithCancellation(Token))
                 {
                     await client.Client.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
                 }
@@ -430,6 +471,10 @@ namespace Tcp_Lib
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Diffuse un objet json reçu par le serveur à l'ensemble des clients
+        /// </summary>
+        /// <param name="obj"></param>
         public async Task SendJsonStreamAsync(object obj)
         {
 
@@ -438,7 +483,7 @@ namespace Tcp_Lib
                 string json = System.Text.Json.JsonSerializer.Serialize(obj);
                 byte[] bytes = Encoding.UTF8.GetBytes(json);
 
-                await foreach (var client in GetClientAsync(_jsonClients).WithCancellation(Token))
+                await foreach (var client in GetClientAsync(JsonClients).WithCancellation(Token))
                 {
                     await client.Client.SendAsync(new ArraySegment<byte>(bytes), SocketFlags.None);
                 }

@@ -7,17 +7,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GameLib.rsc
 {
+    /// <summary>
+    /// Classe permettant de selectionner une entité en base grâce à Entity-Framework 6 
+    /// </summary>
     public class Word
     {
+        /// <summary>
+        /// Id en base
+        /// </summary>
         [Required]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; init; }
 
+        /// <summary>
+        /// Mot du dictionnaire
+        /// </summary>
         [Required] public string Text { get; init; }
 
+        /// <summary>
+        /// Enum sur la langue du mot (au cas où...)
+        /// </summary>
         [Required] public Language Language { get; init; }
 
+        /// <summary>
+        /// Selectionne un mot aléatoirement en base
+        /// </summary>
+        /// <returns></returns>
         public static async Task<Word> SelectRandomWord()
         {
             Word result = null;
@@ -43,6 +59,9 @@ namespace GameLib.rsc
     }
 
 
+    /// <summary>
+    /// Enum sur la langue du mot choisi
+    /// </summary>
     public enum Language
     {
         EN_US,

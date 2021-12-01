@@ -10,7 +10,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Csharp_Tcp_Lib\Tcp_Lib\Tcp_Lib.csproj" />
         <ProjectReference Include="..\GameLib\GameLib.csproj" />
         <ProjectReference Include="..\Tcp_Lib\Tcp_Lib.csproj" />
     </ItemGroup>

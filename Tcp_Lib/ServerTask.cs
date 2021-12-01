@@ -2,6 +2,9 @@
 
 namespace Tcp_Lib
 {
+    /// <summary>
+    /// Type de la tâche crée
+    /// </summary>
     public enum TaskType
     {
         LISTEN,
@@ -10,6 +13,9 @@ namespace Tcp_Lib
         
     }
 
+    /// <summary>
+    /// Tâche associée à process sur le serveur
+    /// </summary>
     public class ServerTask
     {
         public Task Task { get; set; }

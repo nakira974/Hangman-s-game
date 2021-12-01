@@ -6,12 +6,12 @@ namespace GameLib.rsc
 {
     public class ProgramDbContext : DbContext
     {
-        private readonly string ConnectionString =
+        private readonly string _connectionString =
             @"Data Source=rsc\Dictionary.db";
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite(ConnectionString);
+            optionsBuilder.UseSqlite(_connectionString);
         }
 
 

@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Tcp_Lib
 {
+    /// <summary>
+    /// Classe abstraite contenant les élements communs au serveur et au client
+    /// </summary>
     public abstract class Host : IHost<Host>
     {
         /// <summary>
@@ -80,8 +83,16 @@ namespace Tcp_Lib
 #pragma warning restore 618
         }
         public abstract void Dispose();
+        /// <summary>
+        /// Démarre le service hôte
+        /// </summary>
+        /// <returns></returns>
         public abstract Task Start();
         public abstract Task Reload();
+        /// <summary>
+        /// Stop l'hôte en fermant les connexion entrantes/sortantes
+        /// </summary>
+        /// <returns></returns>
         public abstract Task Stop();
         public async Task<IAsyncResult> SendByteAsync(string jsonContent)
         {

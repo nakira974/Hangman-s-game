@@ -219,6 +219,7 @@ namespace JeuxDuPendu
         /// </summary>
         private void StartNewGame()
         {
+            Ruler.IsGameWon = false;
             // Methode de reinitialisation classe d'affichage du pendu.
             _hangmanViewer.Reset();
 

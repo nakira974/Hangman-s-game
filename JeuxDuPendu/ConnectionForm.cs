@@ -14,8 +14,8 @@ namespace JeuxDuPendu
     public partial class ConnectionForm : Form
     {
         public System.Windows.Forms.Timer ATimer = new System.Windows.Forms.Timer();
-        private string? _playerName { get; set; }
-        private string? _currentServerSelected { get; set; }
+        private string? PlayerName { get; set; }
+        private string? CurrentServerSelected { get; set; }
 
         
         public ConnectionForm()
@@ -55,7 +55,7 @@ namespace JeuxDuPendu
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Server server = new Server(_playerName);
+            Server server = new Server(PlayerName);
             Task startTask = server.Start();
             this.Hide();
             Multiplayer multiplayer = new Multiplayer(server);
@@ -63,17 +63,27 @@ namespace JeuxDuPendu
             multiplayer.Show();
         }
 
+        /// <summary>
+        /// Affecte le contenu d'une cellule sélectionnée de la datagridview à l'adresse de connexion
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void serverDataGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
             foreach (DataGridViewCell cell in serverDataGrid.SelectedCells)
             {
-                _currentServerSelected = cell.Value.ToString();
+                CurrentServerSelected = cell.Value.ToString();
                 break;
             }
 
         }
 
+        /// <summary>
+        /// Rempli la datagridviewd des serveurs au chargement
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ConnectionForm_Load(object sender, EventArgs e)
         {
             FillServerDataGrid();
@@ -165,9 +175,14 @@ namespace JeuxDuPendu
             return servers;
         }
 
+        /// <summary>
+        /// Assigne l'ip du serveur dans la text box à l'attribut de connexion pour le constructeur client
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void connectionTextBox_TextChanged(object sender, EventArgs e)
         {
-            _currentServerSelected = connectionTextBox.Text;
+            CurrentServerSelected = connectionTextBox.Text;
         }
 
         /// <summary>
@@ -177,23 +192,40 @@ namespace JeuxDuPendu
         /// <param name="e"></param>
         private async void connectionButton_Click(object sender, EventArgs e)
         {
-            var tasks = new List<Task>();
-            Client client = new Client(_playerName);
-            await client.ConnectAsync(connectionTextBox.Text);
-            if (client.ClientStream.Count > 0)
+            try
             {
-                this.Hide();
-                Multiplayer multiplayer = new Multiplayer(client);
-                multiplayer.Closed += (s, args) => this.Close();
-                multiplayer.Show();
-            }
+                string serverAdd = string.IsNullOrEmpty(CurrentServerSelected)
+                    ? textBox1.Text
+                    : CurrentServerSelected;
+                var tasks = new List<Task>();
+                Client client = new Client(PlayerName);
+                await client.ConnectAsync(serverAdd);
+                if (client.ClientStream.Count > 0)
+                {
+                    this.Hide();
+                    Multiplayer multiplayer = new Multiplayer(client);
+                    multiplayer.Closed += (s, args) => this.Close();
+                    multiplayer.Show();
+                }
 
-            await Task.Run(client.LaunchProcess);
+                await Task.Run(client.LaunchProcess);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                throw;
+            }
+            
         }
 
+        /// <summary>
+        /// Affecte le nom du joueur
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            _playerName = textBox1.Text;
+            PlayerName = textBox1.Text;
         }
 
         /// <summary>
@@ -232,7 +264,7 @@ namespace JeuxDuPendu
                     context.Players.Include(collection => collection.Severs);
                     var server = new Player.ServerListView()
                     {
-                        IpAddress = _currentServerSelected
+                        IpAddress = CurrentServerSelected
                     };
                     var player = context.Players.FirstOrDefaultAsync().Result;
                     if (player.Severs == null)
